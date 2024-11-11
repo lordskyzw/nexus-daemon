@@ -106,7 +106,11 @@ def extract_items(lines, is_credit=False):
                     qty = int(parts[1])
                 except ValueError:
                     item_name += f" {parts[1]}"
-                    qty = int(parts[2])
+                    try:
+                        qty = int(parts[2])
+                    except ValueError:
+                        item_name += f" {parts[2]}"
+                        qty = int(parts[3])
                 unit_price = float(parts[-2])
                 tax_percent = float(parts[-1].strip('%')) if '%' in parts[-1] else 0.0
 
