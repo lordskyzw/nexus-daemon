@@ -15,14 +15,16 @@ def extract_data_from_pdf(pdf_path):
 
         # Determine document type
         if "CREDIT NOTE" in text:
+            print("Extracting credit note data...")
             return extract_credit_note_data(lines)
         elif "Fiscal Tax Invoice" in text:
+            print("Extracting invoice data...")
             return extract_invoice_data(lines)
         else:
             raise ValueError("Unsupported document type")
 
     except Exception as e:
-        print(f"Error extracting data from {pdf_path}: {e}")
+        print(f"Source: line 25 extraction_engine.py. Error extracting data from {pdf_path}: {e}")
         return None
 
 def extract_invoice_data(lines):
@@ -57,7 +59,7 @@ def extract_credit_note_data(lines):
     referenced_receipt_no = extract_field(lines, "Zimra Invoice#")
     
     formatted_date = datetime.strptime(receipt_date, '%d/%m/%Y').strftime('%Y-%m-%dT%H:%M:%S')
-    currency = "USD" if "USD" in lines[-1] else extract_currency(lines)
+    currency = "USD" if "USD" in lines else "ZWG"
     
     receipt_lines = extract_items(lines, is_credit=True)
     total_payment = sum(item["quantity"] * item["unit_price"] for item in receipt_lines)
@@ -91,6 +93,7 @@ def extract_currency(lines):
 
 def extract_items(lines, is_credit=False):
     """Extract item lines for invoices or credit notes."""
+    # suspecting bug to be here
     receipt_lines = []
     item_start = False
 
@@ -100,8 +103,10 @@ def extract_items(lines, is_credit=False):
             continue
         if item_start and "USD" not in line:
             parts = line.split()
+            print(f"Parts {parts}")
             if len(parts) >= 4:
                 item_name = parts[0]
+                print(f"item name {item_name}")
                 try:
                     qty = int(parts[1])
                 except ValueError:
@@ -128,8 +133,10 @@ def extract_items(lines, is_credit=False):
 
 def extract_field(lines, field_name):
     """Helper to extract fields from the text based on the field name."""
+    print(f"Extracting {field_name}...")
     for line in lines:
         if field_name in line:
+            print(f"for {field_name} we extracted {line}")
             return line.split(field_name)[-1].strip()
     return None
 
